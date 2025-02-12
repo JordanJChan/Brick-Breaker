@@ -133,7 +133,7 @@ if __name__ == "__main__":
     black_heading = Paddle(window.get_width(), 20)
     black_heading.setPOS((window.get_width() - paddle.get_width())/2, 0)
     black_heading.set_color((0, 0, 0))
-
+    print("hdslkjf")
     while True:
 
 
