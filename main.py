@@ -43,14 +43,9 @@ class Window:
         return self.__height
 
 
-class Text:
-    def __init__(self, text):
-        self.__text = text
-
-
 class mySprite:
 
-    def __init__(self, width=1, height=1, x=0, y=0, speed=8, color=(255, 255, 255)):
+    def __init__(self, width=1, height=1, color=(255, 255, 255), x=0, y=0, speed=8):
         self.__width = width
         self.__height = height
         self._dim = (self.__width, self.__height)
@@ -63,11 +58,14 @@ class mySprite:
         self.__dir_x = 1
         self.__dir_y = 1
 
+
     def setX(self, x):
         self.__x = x
+        self.__pos = (self.__x, self.__y)
 
     def setY(self, y):
         self.__y = y
+        self.__pos = (self.__x, self.__y)
 
     def setPOS(self, x, y):
         self.setX(x)
@@ -110,10 +108,18 @@ class mySprite:
 
 
 
+class Text(mySprite):
+    def __init__(self, text, f_family="Arial", f_size=36, x=0, y=0):
+        mySprite.__init__(self, x=x, y=y)
+        self.__text = text
+        self.__font_family = f_family
+        self.__font_size = f_size
+        self.__font = pygame.font.SysFont(self.__font_family, self.__font_size)
+        self._SURFACE = self.__font.render(self.__text, True, self._color)
 
 class Paddle(mySprite):
-    def __init__(self, width=1, height=1):
-        mySprite.__init__(self, width, height)
+    def __init__(self, width=1, height=1, color=(255, 255, 255)):
+        mySprite.__init__(self, width, height, color)
         self._SURFACE = pygame.Surface(self._dim, pygame.SRCALPHA, 32)
         self._SURFACE.fill(self._color)
 
@@ -124,18 +130,22 @@ class Ball:
 if __name__ == "__main__":
     pygame.init()
 
-
     window = Window("Brick Breaker", 600, 600, 30)
 
     paddle = Paddle(100, 20)
     paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
 
-    black_heading = Paddle(window.get_width(), 20)
-    black_heading.setPOS((window.get_width() - paddle.get_width())/2, 0)
-    black_heading.set_color((0, 0, 0))
-    print("hdslkjf")
-    while True:
+    black_heading = Paddle(window.get_width(), 60, (0, 0, 0))
+    #black_heading.setPOS((window.get_width() - paddle.get_width())/2, 0)
 
+    text1 = Text("Score: ")
+    text1.setPOS(0, 0)
+
+    text2 = Text("BRICK BREAKER!")
+    text2.setPOS(175, 0)
+
+
+    while True:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -150,9 +160,11 @@ if __name__ == "__main__":
         window.clear_screen()
 
 
-
         window.get_surface().blit(paddle.get_surface(), paddle.get_pos())
         window.get_surface().blit(black_heading.get_surface(), black_heading.get_pos())
+        window.get_surface().blit(text1.get_surface(), text1.get_pos())
+
+        window.get_surface().blit(text2.get_surface(), text2.get_pos())
 
         window.update_frame()
 
