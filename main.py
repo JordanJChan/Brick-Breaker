@@ -124,8 +124,32 @@ class Paddle(mySprite):
         self._SURFACE.fill(self._color)
 
 
-class Ball:
-    pass
+class Ball(mySprite):
+    def __init__(self, width=1, height=1, color=(255, 255, 255), x=0, y=0, speed=8):
+        mySprite.__init__(self, width, height, color, x, y, speed)
+        self._SURFACE = pygame.Surface(self._dim, pygame.SRCALPHA, 32)
+        self._SURFACE.fill(self._color)
+        self.__DirX = 1
+        self.__DirY = 1
+
+    def checkBoundaries(self, max_x, max_y, min_x=0, min_y=0):
+        mySprite.checkBoundaries(self, max_x, max_y, min_x=0, min_y=60)
+        self.__x += self.__speed * self.__DirX
+        self.__y += self.__speed * self.__DirY
+        if self.__x > (max_x - self.__width):
+            self.__x = max_x - self.__width
+            self.__DirX = -1
+        if self.__x < min_x:
+            self.__x = min_x
+            self.__DirX = 1
+        if self.__y > (max_y - self.__height):
+            self.__y = max_y - self.__height
+            self.__DirY = -1
+        if self.__y < min_y:
+            self.__y = min_y
+            self.__DirY = 1
+        self.__pos = (self.__x, self.__y)
+
 
 if __name__ == "__main__":
     pygame.init()
@@ -144,6 +168,7 @@ if __name__ == "__main__":
     text2 = Text("BRICK BREAKER!")
     text2.setPOS(175, 0)
 
+    ball = Ball(10, 10)
 
     while True:
 
@@ -156,6 +181,8 @@ if __name__ == "__main__":
         paddle.horizontal_movement(pressed_keys)
         paddle.checkBoundaries(window.get_width(), window.get_height(), 0, 0)
 
+        ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height())
+
 
         window.clear_screen()
 
@@ -165,6 +192,8 @@ if __name__ == "__main__":
         window.get_surface().blit(text1.get_surface(), text1.get_pos())
 
         window.get_surface().blit(text2.get_surface(), text2.get_pos())
+
+        window.get_surface().blit(ball.get_surface(), ball.get_pos())
 
         window.update_frame()
 
