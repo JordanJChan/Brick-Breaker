@@ -77,6 +77,11 @@ class mySprite:
     def set_color(self, color):
         self._color = color
 
+    def reverse_directionX(self):
+        self.__dir_x = self.__dir_x*-1
+
+    def reverse_directionY(self):
+        self.__dir_y = self.__dir_y*-1
 
     def get_pos(self):
         return self.__pos
@@ -89,6 +94,15 @@ class mySprite:
 
     def get_height(self):
         return self.__height
+
+    def get_directionX(self):
+        return self.__dir_x
+
+    def get_directionY(self):
+        return self.__dir_y
+
+    def get_speed(self):
+        return self.__speed
 
     def horizontal_movement(self, pressed_keys):
         if pressed_keys[pygame.K_d] == 1:
@@ -129,32 +143,39 @@ class Ball(mySprite):
         mySprite.__init__(self, width, height, color, x, y, speed)
         self._SURFACE = pygame.Surface(self._dim, pygame.SRCALPHA, 32)
         self._SURFACE.fill(self._color)
-        self.__DirX = 1
-        self.__DirY = 1
+
 
     def checkBoundaries(self, max_x, max_y, min_x=0, min_y=0):
         mySprite.checkBoundaries(self, max_x, max_y, min_x=0, min_y=60)
-        self.__x += self.__speed * self.__DirX
-        self.__y += self.__speed * self.__DirY
-        if self.__x > (max_x - self.__width):
-            self.__x = max_x - self.__width
-            self.__DirX = -1
-        if self.__x < min_x:
-            self.__x = min_x
-            self.__DirX = 1
-        if self.__y > (max_y - self.__height):
-            self.__y = max_y - self.__height
-            self.__DirY = -1
-        if self.__y < min_y:
-            self.__y = min_y
-            self.__DirY = 1
-        self.__pos = (self.__x, self.__y)
+        position = self.get_pos()
+        x_position = position[0]
+        y_position = position[1]
+        speed = self.get_speed()
+
+        x_position += speed * self.get_directionX()
+        y_position += speed * self.get_directionY()
+        if x_position > (max_x - self.get_width()):
+            x_position = max_x - self.get_width()
+            self.reverse_directionX()
+        if x_position < min_x:
+            x_position = min_x
+            self.reverse_directionX()
+        if y_position > (max_y - self.get_height()):
+            y_position = max_y - self.get_height()
+            self.reverse_directionY()
+        if y_position < min_y:
+            y_position = min_y
+            self.reverse_directionY()
+        self.setPOS(x_position, y_position)
+
+    def paddle_collision(self):
+        pass
 
 
 if __name__ == "__main__":
     pygame.init()
 
-    window = Window("Brick Breaker", 600, 600, 30)
+    window = Window("Brick Breaker", 600, 600, 60)
 
     paddle = Paddle(100, 20)
     paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
@@ -168,7 +189,7 @@ if __name__ == "__main__":
     text2 = Text("BRICK BREAKER!")
     text2.setPOS(175, 0)
 
-    ball = Ball(10, 10)
+    ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2, 5)
 
     while True:
 
