@@ -171,9 +171,9 @@ class Ball(mySprite):
     def paddle_collision(self):
         pass
 
-
+# --- Main program code ---
 if __name__ == "__main__":
-    pygame.init()
+    pygame.init() # Initialize pygame
 
     window = Window("Brick Breaker", 600, 600, 60)
 
