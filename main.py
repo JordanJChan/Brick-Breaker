@@ -130,6 +130,10 @@ class Text(mySprite):
         self.__font_size = f_size
         self.__font = pygame.font.SysFont(self.__font_family, self.__font_size)
         self._SURFACE = self.__font.render(self.__text, True, self._color)
+    
+    def update_text(self, new_text):
+        self.__text = new_text
+        self._SURFACE = self.__font.render(self.__text, True, self._color)
 
 class Paddle(mySprite):
     def __init__(self, width=1, height=1, color=(255, 255, 255)):
@@ -168,8 +172,36 @@ class Ball(mySprite):
             self.reverse_directionY()
         self.setPOS(x_position, y_position)
 
-    def paddle_collision(self):
-        pass
+    def paddle_collision(self, paddle_width, paddle_height, paddle_pos):
+        ball_pos = self.get_pos()
+        ball_x = ball_pos[0]
+        ball_y = ball_pos[1]
+
+        paddle_x = paddle_pos[0]
+        paddle_y = paddle_pos[1]
+        
+        if (ball_y + self.get_height() >= paddle_y) and (ball_y <= paddle_y + paddle_height):
+            if (ball_x + self.get_width() >= paddle_x) and (ball_x <= paddle_x + paddle_width):
+
+                if ball_y + self.get_height() <= paddle_y + self.get_speed(): # Hit the top
+                    print("Hit the top")
+                    self.reverse_directionY()
+                # elif ball_y - self.get_height() <= paddle_y + paddle_height: # Hit the bottom
+                #     print("Hit the bottom")
+                #     self.reverse_directionY()
+                elif ball_y >= paddle_y - self.get_speed():
+                    print("hit the bottom")
+                    self.reverse_directionY()
+                elif ball_x + self.get_width() >= paddle_x + self.get_speed(): # Hit the left
+                    print("Hit the left")
+                    self.reverse_directionX()
+                    self.reverse_directionY()
+                elif ball_x - self.get_width() <= paddle_x + self.get_speed(): # Hit the right
+                    print("Hit the right")
+                    self.reverse_directionX()
+                    self.reverse_directionY()
+
+
 
 # --- Main program code ---
 if __name__ == "__main__":
@@ -183,8 +215,9 @@ if __name__ == "__main__":
     black_heading = Paddle(window.get_width(), 60, (0, 0, 0))
     #black_heading.setPOS((window.get_width() - paddle.get_width())/2, 0)
 
-    text1 = Text("Score: ")
+    text1 = Text("Score: 0")
     text1.setPOS(0, 0)
+    
 
     text2 = Text("BRICK BREAKER!")
     text2.setPOS(175, 0)
@@ -203,6 +236,7 @@ if __name__ == "__main__":
         paddle.checkBoundaries(window.get_width(), window.get_height(), 0, 0)
 
         ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height())
+        ball.paddle_collision(paddle.get_width(), paddle.get_height(), paddle.get_pos())
 
 
         window.clear_screen()
