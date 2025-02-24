@@ -141,6 +141,12 @@ class Paddle(mySprite):
         self._SURFACE = pygame.Surface(self._dim, pygame.SRCALPHA, 32)
         self._SURFACE.fill(self._color)
 
+class Brick(mySprite):
+    def __init__(self, width=70, height=30, color=(255, 255, 255)):
+        mySprite.__init__(self, width, height, color)
+        self._SURFACE = pygame.Surface(self._dim, pygame.SRCALPHA, 32)
+        self._SURFACE.fill(self._color)
+
 
 class Ball(mySprite):
     def __init__(self, width=1, height=1, color=(255, 255, 255), x=0, y=0, speed=8):
@@ -149,8 +155,8 @@ class Ball(mySprite):
         self._SURFACE.fill(self._color)
 
 
-    def checkBoundaries(self, max_x, max_y, min_x=0, min_y=0):
-        mySprite.checkBoundaries(self, max_x, max_y, min_x=0, min_y=60)
+    def checkBoundaries(self, max_x=600, max_y=600, min_x=0, min_y=0):
+        mySprite.checkBoundaries(self, max_x=600, max_y=600, min_x=0, min_y=60)
         position = self.get_pos()
         x_position = position[0]
         y_position = position[1]
@@ -170,6 +176,15 @@ class Ball(mySprite):
         if y_position < min_y:
             y_position = min_y
             self.reverse_directionY()
+        self.setPOS(x_position, y_position)
+
+    def move(self):
+        position = self.get_pos()
+        x_position = position[0]
+        y_position = position[1]
+        speed = self.get_speed()
+        x_position += speed * self.get_directionX()
+        y_position += speed * self.get_directionY()
         self.setPOS(x_position, y_position)
 
     def paddle_collision(self, paddle_width, paddle_height, paddle_pos):
@@ -192,14 +207,38 @@ class Ball(mySprite):
                 elif ball_y >= paddle_y - self.get_speed():
                     print("hit the bottom")
                     self.reverse_directionY()
-                elif ball_x + self.get_width() >= paddle_x + self.get_speed(): # Hit the left
-                    print("Hit the left")
-                    self.reverse_directionX()
+                # elif ball_x + self.get_width() >= paddle_x + self.get_speed(): # Hit the left
+                #     print("Hit the left")
+                #     self.reverse_directionX()
+                #     self.reverse_directionY()
+                # elif ball_x - self.get_width() <= paddle_x + self.get_speed(): # Hit the right
+                #     print("Hit the right")
+                #     self.reverse_directionX()
+                #     self.reverse_directionY()
+                else:
+                    print("Hit the left or right")
                     self.reverse_directionY()
-                elif ball_x - self.get_width() <= paddle_x + self.get_speed(): # Hit the right
-                    print("Hit the right")
                     self.reverse_directionX()
-                    self.reverse_directionY()
+
+                while (ball_y + self.get_height() >= paddle_y) and (ball_y <= paddle_y + paddle_height) and (ball_x + self.get_width() >= paddle_x) and (ball_x <= paddle_x + paddle_width):
+                    self.checkBoundaries()
+                    new_pos = self.get_pos()
+                    ball_x = new_pos[0]
+                    ball_y = new_pos[1]
+
+
+    def collision(self, object_width, object_height, object_pos):
+        ball_pos = self.get_pos()
+        ball_x = ball_pos[0]
+        ball_y = ball_pos[1]
+
+        object_x = object_pos[0]
+        object_y = object_pos[1]
+
+        if (ball_y + self.get_height() >= object_y) and (ball_y <= object_y + object_height):
+            if (ball_x + self.get_width() >= object_x) and (ball_x <= object_x + object_width):
+                return True
+        return False
 
 
 
@@ -209,7 +248,7 @@ if __name__ == "__main__":
 
     window = Window("Brick Breaker", 600, 600, 60) # Creates the window
 
-    paddle = Paddle(100, 20)
+    paddle = Paddle(100, 10)
     paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
 
     black_heading = Paddle(window.get_width(), 60, (0, 0, 0))
@@ -223,6 +262,14 @@ if __name__ == "__main__":
     text2.setPOS(175, 0)
 
     ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2, 5)
+
+    bricks = []
+
+    for x in range(0, 7):
+        for y in range(0, 5):
+            new_brick = Brick(60, 40)
+            new_brick.setPOS(70*x+60, 50*y+100)
+            bricks.append(new_brick)
 
     while True:
 
@@ -249,6 +296,9 @@ if __name__ == "__main__":
         window.get_surface().blit(text2.get_surface(), text2.get_pos())
 
         window.get_surface().blit(ball.get_surface(), ball.get_pos())
+
+        for object in bricks:
+            window.get_surface().blit(object.get_surface(), object.get_pos())
 
         window.update_frame()
 
