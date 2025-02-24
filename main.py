@@ -207,7 +207,7 @@ class Ball(mySprite):
 if __name__ == "__main__":
     pygame.init() # Initialize pygame
 
-    window = Window("Brick Breaker", 600, 600, 60)
+    window = Window("Brick Breaker", 600, 600, 60) # Creates the window
 
     paddle = Paddle(100, 20)
     paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
