@@ -120,6 +120,15 @@ class mySprite:
 
         self.__pos = (self.__x, self.__y)
 
+    def is_collision(self, width, height, pos):
+        """
+        Uses the width, height, and position of the external sprite to check for collision
+        """
+        if pos[0] + width >= self.__x and pos[0] <= self.__x + self.get_width():
+            if pos[1] + height >= self.__y and pos[1] <= self.__y + self.get_height():
+                return True
+        return False
+
 
 
 class Text(mySprite):
@@ -177,68 +186,15 @@ class Ball(mySprite):
             y_position = min_y
             self.reverse_directionY()
         self.setPOS(x_position, y_position)
+    
+    def brick_collision(self, width, height, pos):
+        brick_x = pos[0]
+        brick_y = pos[1]
 
-    def move(self):
-        position = self.get_pos()
-        x_position = position[0]
-        y_position = position[1]
-        speed = self.get_speed()
-        x_position += speed * self.get_directionX()
-        y_position += speed * self.get_directionY()
-        self.setPOS(x_position, y_position)
-
-    def paddle_collision(self, paddle_width, paddle_height, paddle_pos):
         ball_pos = self.get_pos()
         ball_x = ball_pos[0]
         ball_y = ball_pos[1]
 
-        paddle_x = paddle_pos[0]
-        paddle_y = paddle_pos[1]
-        
-        if (ball_y + self.get_height() >= paddle_y) and (ball_y <= paddle_y + paddle_height):
-            if (ball_x + self.get_width() >= paddle_x) and (ball_x <= paddle_x + paddle_width):
-
-                if ball_y + self.get_height() <= paddle_y + self.get_speed(): # Hit the top
-                    print("Hit the top")
-                    self.reverse_directionY()
-                # elif ball_y - self.get_height() <= paddle_y + paddle_height: # Hit the bottom
-                #     print("Hit the bottom")
-                #     self.reverse_directionY()
-                elif ball_y >= paddle_y - self.get_speed():
-                    print("hit the bottom")
-                    self.reverse_directionY()
-                # elif ball_x + self.get_width() >= paddle_x + self.get_speed(): # Hit the left
-                #     print("Hit the left")
-                #     self.reverse_directionX()
-                #     self.reverse_directionY()
-                # elif ball_x - self.get_width() <= paddle_x + self.get_speed(): # Hit the right
-                #     print("Hit the right")
-                #     self.reverse_directionX()
-                #     self.reverse_directionY()
-                else:
-                    print("Hit the left or right")
-                    self.reverse_directionY()
-                    self.reverse_directionX()
-
-                while (ball_y + self.get_height() >= paddle_y) and (ball_y <= paddle_y + paddle_height) and (ball_x + self.get_width() >= paddle_x) and (ball_x <= paddle_x + paddle_width):
-                    self.checkBoundaries()
-                    new_pos = self.get_pos()
-                    ball_x = new_pos[0]
-                    ball_y = new_pos[1]
-
-
-    def collision(self, object_width, object_height, object_pos):
-        ball_pos = self.get_pos()
-        ball_x = ball_pos[0]
-        ball_y = ball_pos[1]
-
-        object_x = object_pos[0]
-        object_y = object_pos[1]
-
-        if (ball_y + self.get_height() >= object_y) and (ball_y <= object_y + object_height):
-            if (ball_x + self.get_width() >= object_x) and (ball_x <= object_x + object_width):
-                return True
-        return False
 
 
 
@@ -248,20 +204,22 @@ if __name__ == "__main__":
 
     window = Window("Brick Breaker", 600, 600, 60) # Creates the window
 
-    paddle = Paddle(100, 10)
+    paddle = Paddle(100, 8)
     paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
 
     black_heading = Paddle(window.get_width(), 60, (0, 0, 0))
     #black_heading.setPOS((window.get_width() - paddle.get_width())/2, 0)
 
+    ready_text = Text("Press Space to Start")
+    ready_text.setPOS(135, 450)
+
     text1 = Text("Score: 0")
     text1.setPOS(0, 0)
     
-
     text2 = Text("BRICK BREAKER!")
     text2.setPOS(175, 0)
 
-    ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2, 5)
+    ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 5.5)
 
     bricks = []
 
@@ -271,23 +229,63 @@ if __name__ == "__main__":
             new_brick.setPOS(70*x+60, 50*y+100)
             bricks.append(new_brick)
 
+    started = False
+
     while True:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
+        
         pressed_keys = pygame.key.get_pressed()
-        paddle.horizontal_movement(pressed_keys)
-        paddle.checkBoundaries(window.get_width(), window.get_height(), 0, 0)
 
-        ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height())
-        ball.paddle_collision(paddle.get_width(), paddle.get_height(), paddle.get_pos())
+        if started == False:
+            if pressed_keys[pygame.K_SPACE]:
+                started = True
+        
+        if started == True:
+            pressed_keys = pygame.key.get_pressed()
+            paddle.horizontal_movement(pressed_keys)
+            paddle.checkBoundaries(window.get_width(), window.get_height(), 0, 0)
+
+            ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height())
+
+            if paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
+                ball_pos = ball.get_pos()
+                ball_x = ball_pos[0]
+                ball_y = ball_pos[1]
+
+                paddle_pos = paddle.get_pos()
+                paddle_x = paddle_pos[0]
+                paddle_y = paddle_pos[1]
+
+                if ball_x >= paddle_x and ball_x + ball.get_width() <= paddle_x + paddle.get_width():
+                    ball.reverse_directionY()
+                else:
+                    if ball_x >= paddle_x and ball_x + ball.get_width() > paddle_x + paddle.get_width() and ball.get_directionX() == 1:
+                        ball.reverse_directionY()
+                    elif ball_x + ball.get_width() <= paddle_x + paddle.get_width() and ball_x < paddle_x and ball.get_directionX() == -1:
+                        ball.reverse_directionY()
+                    else:
+                        ball.reverse_directionY()
+                        ball.reverse_directionX()
+    
+                    
+                while paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
+                    ball.checkBoundaries()
+            
+            
+            for brick in bricks:
+                if brick.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
+                    pass # COLLISION CHECK HERE
+
 
 
         window.clear_screen()
 
+        if started == False:
+            window.get_surface().blit(ready_text.get_surface(), ready_text.get_pos())
 
         window.get_surface().blit(paddle.get_surface(), paddle.get_pos())
         window.get_surface().blit(black_heading.get_surface(), black_heading.get_pos())
@@ -301,15 +299,6 @@ if __name__ == "__main__":
             window.get_surface().blit(object.get_surface(), object.get_pos())
 
         window.update_frame()
-
-
-
-
-
-
-
-
-
 
 
 
