@@ -211,7 +211,7 @@ if __name__ == "__main__":
     #black_heading.setPOS((window.get_width() - paddle.get_width())/2, 0)
 
     ready_text = Text("Press Space to Start")
-    ready_text.setPOS(135, 450)
+    ready_text.setPOS(165, 450)
 
     text1 = Text("Score: 0")
     text1.setPOS(0, 0)
