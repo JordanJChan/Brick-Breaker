@@ -128,6 +128,9 @@ class mySprite:
             if pos[1] + height >= self.__y and pos[1] <= self.__y + self.get_height():
                 return True
         return False
+    
+    def make_box(self):
+        return pygame.Rect(self.__x, self.__y, self.__width, self.__height)
 
 
 
@@ -187,14 +190,31 @@ class Ball(mySprite):
             self.reverse_directionY()
         self.setPOS(x_position, y_position)
     
-    def brick_collision(self, width, height, pos):
-        brick_x = pos[0]
-        brick_y = pos[1]
 
-        ball_pos = self.get_pos()
-        ball_x = ball_pos[0]
-        ball_y = ball_pos[1]
+    def brick_collision(self, ball, brick):
+        ball_rectangle = ball.make_box()
+        brick_rectangle = brick.make_box()
 
+        if ball_rectangle.colliderect(brick_rectangle):
+            
+            # if ball_rectangle.left <= brick_rectangle.left or ball_rectangle.right >= brick_rectangle.right: # Left and right
+            #     self.reverse_directionX()
+            #     print("wut")
+            # elif ball_rectangle.bottom >= brick_rectangle.bottom or ball_rectangle.top <= brick_rectangle.top: # Top and bottom
+            #     self.reverse_directionY()
+            #     print('huh')
+
+            if ball_rectangle.bottom >= brick_rectangle.bottom or ball_rectangle.top <= brick_rectangle.top: # Top and bottom
+                self.reverse_directionY()
+                print('huh')
+            elif ball_rectangle.left <= brick_rectangle.left or ball_rectangle.right >= brick_rectangle.right: # Left and right
+                self.reverse_directionX()
+                print("wut")
+
+            # if ball_rectangle.right > brick_rectangle.left and ball_rectangle.left < brick_rectangle.left:
+            #     self.reverse_directionX()
+            # elif ball_rectangle.left < brick_rectangle.right and ball_rectangle.right > ball_rectangle.right:
+            
 
 
 
@@ -219,7 +239,7 @@ if __name__ == "__main__":
     text2 = Text("BRICK BREAKER!")
     text2.setPOS(175, 0)
 
-    ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 5.5)
+    ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 5.5) 
 
     bricks = []
 
@@ -230,6 +250,7 @@ if __name__ == "__main__":
             bricks.append(new_brick)
 
     started = False
+    score = 0
 
     while True:
 
@@ -278,14 +299,18 @@ if __name__ == "__main__":
             
             for brick in bricks:
                 if brick.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
-                    pass # COLLISION CHECK HERE
-
+                    ball.brick_collision(ball, brick)
+                    bricks.remove(brick)
+                    score += 1
+                    text1.update_text(f"Score: {score}")
+                    
 
 
         window.clear_screen()
 
         if started == False:
             window.get_surface().blit(ready_text.get_surface(), ready_text.get_pos())
+        
 
         window.get_surface().blit(paddle.get_surface(), paddle.get_pos())
         window.get_surface().blit(black_heading.get_surface(), black_heading.get_pos())
