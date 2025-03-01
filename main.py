@@ -6,7 +6,7 @@ date: 2025-2-6
 
 
 import pygame
-
+from random import randint
 
 class Window:
 
@@ -158,6 +158,14 @@ class Brick(mySprite):
         mySprite.__init__(self, width, height, color)
         self._SURFACE = pygame.Surface(self._dim, pygame.SRCALPHA, 32)
         self._SURFACE.fill(self._color)
+        self.__create_ball = False
+    
+    def can_make_ball(self):
+        self.__create_ball = True
+        self._SURFACE.fill((52, 171, 235))
+    
+    def make_ball(self):
+        return self.__create_ball
 
 
 class Ball(mySprite):
@@ -176,19 +184,21 @@ class Ball(mySprite):
 
         x_position += speed * self.get_directionX()
         y_position += speed * self.get_directionY()
-        if x_position > (max_x - self.get_width()):
+        if x_position > (max_x - self.get_width()): # Right
             x_position = max_x - self.get_width()
             self.reverse_directionX()
-        if x_position < min_x:
+        if x_position < min_x: # Left
             x_position = min_x
             self.reverse_directionX()
-        if y_position > (max_y - self.get_height()):
+        if y_position > (max_y - self.get_height()): # Bottom
             y_position = max_y - self.get_height()
             self.reverse_directionY()
-        if y_position < min_y:
+            return True
+        if y_position < min_y: # Top
             y_position = min_y
             self.reverse_directionY()
         self.setPOS(x_position, y_position)
+        return False
     
 
     def brick_collision(self, ball, brick):
@@ -196,25 +206,45 @@ class Ball(mySprite):
         brick_rectangle = brick.make_box()
 
         if ball_rectangle.colliderect(brick_rectangle):
-            
-            # if ball_rectangle.left <= brick_rectangle.left or ball_rectangle.right >= brick_rectangle.right: # Left and right
-            #     self.reverse_directionX()
-            #     print("wut")
-            # elif ball_rectangle.bottom >= brick_rectangle.bottom or ball_rectangle.top <= brick_rectangle.top: # Top and bottom
+
+            # if ball_rectangle.bottom > brick_rectangle.bottom or ball_rectangle.top < brick_rectangle.top: # Top and bottom
             #     self.reverse_directionY()
-            #     print('huh')
-
-            if ball_rectangle.bottom >= brick_rectangle.bottom or ball_rectangle.top <= brick_rectangle.top: # Top and bottom
-                self.reverse_directionY()
-                print('huh')
-            elif ball_rectangle.left <= brick_rectangle.left or ball_rectangle.right >= brick_rectangle.right: # Left and right
-                self.reverse_directionX()
-                print("wut")
-
-            # if ball_rectangle.right > brick_rectangle.left and ball_rectangle.left < brick_rectangle.left:
+            #     print('Top or bottom')
+            # elif ball_rectangle.left < brick_rectangle.left or ball_rectangle.right > brick_rectangle.right: # Left and right
             #     self.reverse_directionX()
-            # elif ball_rectangle.left < brick_rectangle.right and ball_rectangle.right > ball_rectangle.right:
+            #     print("Left or right")
+
+            left_overlap = brick_rectangle.right - ball_rectangle.left
+            right_overlap = ball_rectangle.right - brick_rectangle.left
+            top_overlap = brick_rectangle.bottom -ball_rectangle.top
+            bottom_overlap = ball_rectangle.bottom - brick_rectangle.top
+
+            if left_overlap < right_overlap and left_overlap < top_overlap and left_overlap < bottom_overlap:
+                self.reverse_directionX()
+                print("left")
+            elif right_overlap < left_overlap and right_overlap < top_overlap and right_overlap < bottom_overlap:
+                self.reverse_directionX()
+                print("right")
+            elif top_overlap < left_overlap and top_overlap < right_overlap and top_overlap < bottom_overlap:
+                self.reverse_directionY()
+                print("top")
+            elif bottom_overlap < left_overlap and bottom_overlap < right_overlap and bottom_overlap < top_overlap:
+                self.reverse_directionY()
+                print("bottom")
+            else:
+                print('wtf')
             
+
+
+def create_bricks():
+    for x in range(0, 7):
+        for y in range(0, 5):
+            new_brick = Brick(60, 40)
+            new_brick.setPOS(70*x+60, 50*y+100)
+            lucky = randint(1, 17)
+            if lucky == 1:
+                new_brick.can_make_ball()
+            bricks.append(new_brick)
 
 
 
@@ -226,31 +256,41 @@ if __name__ == "__main__":
 
     paddle = Paddle(100, 8)
     paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
+    paddle.set_speed(9)
+    
 
     black_heading = Paddle(window.get_width(), 60, (0, 0, 0))
-    #black_heading.setPOS((window.get_width() - paddle.get_width())/2, 0)
 
     ready_text = Text("Press Space to Start")
     ready_text.setPOS(165, 450)
 
-    text1 = Text("Score: 0")
+    text1 = Text("Score: 0", "Arial", 30)
     text1.setPOS(0, 0)
     
     text2 = Text("BRICK BREAKER!")
     text2.setPOS(175, 0)
 
-    ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 5.5) 
+    level_text = Text("Level: 1", "Arial", 20)
+    level_text.setPOS(500, 0)
+
+    lives = 3   
+    lives_text = Text(f"Lives: {lives}", "Arial", 20)
+    lives_text.setPOS(500, 30)
+
+    game_over_text = Text("Game Over. Press Space to Restart")
+    game_over_text.setPOS(50, 450)
+    
+    ball_list = []
+    start_ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 2.5) 
+    ball_list.append(start_ball)
 
     bricks = []
-
-    for x in range(0, 7):
-        for y in range(0, 5):
-            new_brick = Brick(60, 40)
-            new_brick.setPOS(70*x+60, 50*y+100)
-            bricks.append(new_brick)
-
+    create_bricks()
+    
+    game_over = False
     started = False
     score = 0
+    level = 1
 
     while True:
 
@@ -270,39 +310,58 @@ if __name__ == "__main__":
             paddle.horizontal_movement(pressed_keys)
             paddle.checkBoundaries(window.get_width(), window.get_height(), 0, 0)
 
-            ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height())
+            for ball in ball_list:
+                if ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height()):
+                    ball_list.remove(ball)
+                    if len(ball_list) == 0:
+                        lives -= 1
+                        if lives != 0:
+                            new_ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 2.5)
+                            ball_list.append(new_ball)
+                            lives_text.update_text(f"Lives: {lives}")
+                        else:
+                            lives_text.update_text(f"Lives: {lives}")
+                            game_over = True
 
-            if paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
-                ball_pos = ball.get_pos()
-                ball_x = ball_pos[0]
-                ball_y = ball_pos[1]
+                if paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
+                    ball_pos = ball.get_pos()
+                    ball_x = ball_pos[0]
+                    ball_y = ball_pos[1]
 
-                paddle_pos = paddle.get_pos()
-                paddle_x = paddle_pos[0]
-                paddle_y = paddle_pos[1]
+                    paddle_pos = paddle.get_pos()
+                    paddle_x = paddle_pos[0]
+                    paddle_y = paddle_pos[1]
 
-                if ball_x >= paddle_x and ball_x + ball.get_width() <= paddle_x + paddle.get_width():
-                    ball.reverse_directionY()
-                else:
-                    if ball_x >= paddle_x and ball_x + ball.get_width() > paddle_x + paddle.get_width() and ball.get_directionX() == 1:
-                        ball.reverse_directionY()
-                    elif ball_x + ball.get_width() <= paddle_x + paddle.get_width() and ball_x < paddle_x and ball.get_directionX() == -1:
+                    if ball_x >= paddle_x and ball_x + ball.get_width() <= paddle_x + paddle.get_width():
                         ball.reverse_directionY()
                     else:
-                        ball.reverse_directionY()
-                        ball.reverse_directionX()
-    
+                        if ball_x >= paddle_x and ball_x + ball.get_width() > paddle_x + paddle.get_width() and ball.get_directionX() == 1:
+                            ball.reverse_directionY()
+                        elif ball_x + ball.get_width() <= paddle_x + paddle.get_width() and ball_x < paddle_x and ball.get_directionX() == -1:
+                            ball.reverse_directionY()
+                        else:
+                            ball.reverse_directionY()
+                            ball.reverse_directionX()
+        
+                        
+                    while paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
+                        ball.checkBoundaries()
                     
-                while paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
-                    ball.checkBoundaries()
-            
-            
-            for brick in bricks:
-                if brick.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
-                    ball.brick_collision(ball, brick)
-                    bricks.remove(brick)
-                    score += 1
-                    text1.update_text(f"Score: {score}")
+                    ball.set_speed(5.5)
+                
+                
+                for brick in bricks:
+                    if brick.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
+                        ball.brick_collision(ball, brick)
+                        if brick.make_ball() is True:
+                            brick_position = brick.get_pos()
+                            new_ball = Ball(20, 20, (255, 255, 255), brick_position[0], brick_position[1], 5.5)
+                            if ball.get_directionX() == -1:
+                                new_ball.reverse_directionY()
+                            ball_list.append(new_ball)
+                        bricks.remove(brick)
+                        score += 1
+                        text1.update_text(f"Score: {score}")
                     
 
 
@@ -311,14 +370,47 @@ if __name__ == "__main__":
         if started == False:
             window.get_surface().blit(ready_text.get_surface(), ready_text.get_pos())
         
+        if len(bricks) == 0:
+            level += 1
+            level_text.update_text(f"Level: {level}")
+            #started = False
+            pos_x = 1
+            for ball in ball_list:
+                ball.setPOS((window.get_width() - 20)/2 +30*pos_x, (window.get_height() - 20)/2 + 70)
+                ball.set_speed(2.5)
+                if ball.get_directionY() == -1:
+                    ball.reverse_directionY()
+                if ball.get_directionX() == -1:
+                    ball.reverse_directionX()
+                pos_x +=1
+            paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
+            create_bricks()
+        
 
         window.get_surface().blit(paddle.get_surface(), paddle.get_pos())
         window.get_surface().blit(black_heading.get_surface(), black_heading.get_pos())
         window.get_surface().blit(text1.get_surface(), text1.get_pos())
+        window.get_surface().blit(level_text.get_surface(), level_text.get_pos())
+        window.get_surface().blit(lives_text.get_surface(), lives_text.get_pos())
+
+        # if game_over is True:
+        #     window.get_surface().blit(game_over_text.get_surface(), game_over_text.get_pos())
+        #     pressed_keys = pygame.key.get_pressed()
+        #     if pressed_keys[pygame.K_SPACE]:
+        #         started = True
+        #         level = 1
+        #         lives = 3
+        #         #started = False
+        #         game_over = False
+        #         new_ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 2.5) 
+        #         ball_list.append(new_ball)
+        #         create_bricks()
+
 
         window.get_surface().blit(text2.get_surface(), text2.get_pos())
 
-        window.get_surface().blit(ball.get_surface(), ball.get_pos())
+        for ball in ball_list:
+            window.get_surface().blit(ball.get_surface(), ball.get_pos())
 
         for object in bricks:
             window.get_surface().blit(object.get_surface(), object.get_pos())
