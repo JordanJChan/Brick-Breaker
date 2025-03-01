@@ -236,7 +236,7 @@ class Ball(mySprite):
             
 
 
-def create_bricks():
+def create_bricks(bricks):
     for x in range(0, 7):
         for y in range(0, 5):
             new_brick = Brick(60, 40)
@@ -247,9 +247,7 @@ def create_bricks():
             bricks.append(new_brick)
 
 
-
-# --- Main program code ---
-if __name__ == "__main__":
+def main():
     pygame.init() # Initialize pygame
 
     window = Window("Brick Breaker", 600, 600, 60) # Creates the window
@@ -278,14 +276,14 @@ if __name__ == "__main__":
     lives_text.setPOS(500, 30)
 
     game_over_text = Text("Game Over. Press Space to Restart")
-    game_over_text.setPOS(50, 450)
+    game_over_text.setPOS(10, 400)
     
     ball_list = []
     start_ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 2.5) 
     ball_list.append(start_ball)
 
     bricks = []
-    create_bricks()
+    create_bricks(bricks)
     
     game_over = False
     started = False
@@ -384,7 +382,7 @@ if __name__ == "__main__":
                     ball.reverse_directionX()
                 pos_x +=1
             paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
-            create_bricks()
+            create_bricks(bricks)
         
 
         window.get_surface().blit(paddle.get_surface(), paddle.get_pos())
@@ -393,18 +391,19 @@ if __name__ == "__main__":
         window.get_surface().blit(level_text.get_surface(), level_text.get_pos())
         window.get_surface().blit(lives_text.get_surface(), lives_text.get_pos())
 
-        # if game_over is True:
-        #     window.get_surface().blit(game_over_text.get_surface(), game_over_text.get_pos())
-        #     pressed_keys = pygame.key.get_pressed()
-        #     if pressed_keys[pygame.K_SPACE]:
-        #         started = True
-        #         level = 1
-        #         lives = 3
-        #         #started = False
-        #         game_over = False
-        #         new_ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 2.5) 
-        #         ball_list.append(new_ball)
-        #         create_bricks()
+        if game_over is True:
+            window.get_surface().blit(game_over_text.get_surface(), game_over_text.get_pos())
+            pressed_keys = pygame.key.get_pressed()
+            if pressed_keys[pygame.K_SPACE]:
+                break
+                # started = True
+                # level = 1
+                # lives = 3
+                # #started = False
+                # game_over = False
+                # new_ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 2.5) 
+                # ball_list.append(new_ball)
+                # create_bricks()
 
 
         window.get_surface().blit(text2.get_surface(), text2.get_pos())
@@ -416,6 +415,12 @@ if __name__ == "__main__":
             window.get_surface().blit(object.get_surface(), object.get_pos())
 
         window.update_frame()
+    
+    main()
+
+# --- Main program code ---
+if __name__ == "__main__":
+   main()
 
 
 
