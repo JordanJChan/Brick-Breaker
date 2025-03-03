@@ -207,33 +207,20 @@ class Ball(mySprite):
 
         if ball_rectangle.colliderect(brick_rectangle):
 
-            # if ball_rectangle.bottom > brick_rectangle.bottom or ball_rectangle.top < brick_rectangle.top: # Top and bottom
-            #     self.reverse_directionY()
-            #     print('Top or bottom')
-            # elif ball_rectangle.left < brick_rectangle.left or ball_rectangle.right > brick_rectangle.right: # Left and right
-            #     self.reverse_directionX()
-            #     print("Left or right")
-
             left_overlap = brick_rectangle.right - ball_rectangle.left
             right_overlap = ball_rectangle.right - brick_rectangle.left
             top_overlap = brick_rectangle.bottom -ball_rectangle.top
             bottom_overlap = ball_rectangle.bottom - brick_rectangle.top
 
-            if left_overlap < right_overlap and left_overlap < top_overlap and left_overlap < bottom_overlap:
+            if left_overlap < right_overlap and left_overlap < top_overlap and left_overlap < bottom_overlap: # Left
                 self.reverse_directionX()
-                print("left")
-            elif right_overlap < left_overlap and right_overlap < top_overlap and right_overlap < bottom_overlap:
+            elif right_overlap < left_overlap and right_overlap < top_overlap and right_overlap < bottom_overlap: # Right
                 self.reverse_directionX()
-                print("right")
-            elif top_overlap < left_overlap and top_overlap < right_overlap and top_overlap < bottom_overlap:
+            elif top_overlap < left_overlap and top_overlap < right_overlap and top_overlap < bottom_overlap: # Top
                 self.reverse_directionY()
-                print("top")
-            elif bottom_overlap < left_overlap and bottom_overlap < right_overlap and bottom_overlap < top_overlap:
+            elif bottom_overlap < left_overlap and bottom_overlap < right_overlap and bottom_overlap < top_overlap: # Bottom
                 self.reverse_directionY()
-                print("bottom")
-            else:
-                print('wtf')
-            
+
 
 
 def create_bricks(bricks):
@@ -285,6 +272,10 @@ def main():
     bricks = []
     create_bricks(bricks)
     
+    power_ups = 1
+    power_up_text = Text(f"Power ups: {power_ups}", "Arial", 20)
+    power_up_text.setPOS(0, 30)
+
     game_over = False
     started = False
     score = 0
@@ -308,6 +299,12 @@ def main():
             paddle.horizontal_movement(pressed_keys)
             paddle.checkBoundaries(window.get_width(), window.get_height(), 0, 0)
 
+            if power_ups > 0:
+                if pressed_keys[pygame.K_w] == 1:
+                    for ball in ball_list:
+                        ball.set_speed(2)
+                    power_ups -= 1
+
             for ball in ball_list:
                 if ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height()):
                     ball_list.remove(ball)
@@ -320,15 +317,14 @@ def main():
                         else:
                             lives_text.update_text(f"Lives: {lives}")
                             game_over = True
+                        power_ups = 1
 
                 if paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
                     ball_pos = ball.get_pos()
                     ball_x = ball_pos[0]
-                    ball_y = ball_pos[1]
 
                     paddle_pos = paddle.get_pos()
                     paddle_x = paddle_pos[0]
-                    paddle_y = paddle_pos[1]
 
                     if ball_x >= paddle_x and ball_x + ball.get_width() <= paddle_x + paddle.get_width():
                         ball.reverse_directionY()
@@ -340,7 +336,7 @@ def main():
                         else:
                             ball.reverse_directionY()
                             ball.reverse_directionX()
-        
+            
                         
                     while paddle.is_collision(ball.get_width(), ball.get_height(), ball.get_pos()):
                         ball.checkBoundaries()
@@ -360,8 +356,10 @@ def main():
                         bricks.remove(brick)
                         score += 1
                         text1.update_text(f"Score: {score}")
+                        ball.set_speed(5.5)
+                
+                power_up_text.update_text(f"Power ups: {power_ups}")
                     
-
 
         window.clear_screen()
 
@@ -383,6 +381,7 @@ def main():
                 pos_x +=1
             paddle.setPOS((window.get_width() - paddle.get_width())/2, 550)
             create_bricks(bricks)
+            power_ups = 1
         
 
         window.get_surface().blit(paddle.get_surface(), paddle.get_pos())
@@ -390,20 +389,13 @@ def main():
         window.get_surface().blit(text1.get_surface(), text1.get_pos())
         window.get_surface().blit(level_text.get_surface(), level_text.get_pos())
         window.get_surface().blit(lives_text.get_surface(), lives_text.get_pos())
+        window.get_surface().blit(power_up_text.get_surface(), power_up_text.get_pos())
 
         if game_over is True:
             window.get_surface().blit(game_over_text.get_surface(), game_over_text.get_pos())
             pressed_keys = pygame.key.get_pressed()
             if pressed_keys[pygame.K_SPACE]:
                 break
-                # started = True
-                # level = 1
-                # lives = 3
-                # #started = False
-                # game_over = False
-                # new_ball = Ball(20, 20, (255, 255, 255), (window.get_width() - 20)/2, (window.get_height() - 20)/2 + 70, 2.5) 
-                # ball_list.append(new_ball)
-                # create_bricks()
 
 
         window.get_surface().blit(text2.get_surface(), text2.get_pos())
