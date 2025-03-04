@@ -7,6 +7,7 @@ date: 2025-2-6
 
 import pygame
 from random import randint
+import time
 
 class Window:
 
@@ -58,6 +59,8 @@ class mySprite:
         self.__dir_x = 1
         self.__dir_y = 1
 
+    def set_width(self, new_width):
+        self.__width = new_width
 
     def setX(self, x):
         self.__x = x
@@ -152,6 +155,10 @@ class Paddle(mySprite):
         mySprite.__init__(self, width, height, color)
         self._SURFACE = pygame.Surface(self._dim, pygame.SRCALPHA, 32)
         self._SURFACE.fill(self._color)
+    
+    def change_width(self, new_width):
+        self._SURFACE = pygame.transform.scale(self._SURFACE, (new_width, self.get_height()))
+        self.set_width(new_width)
 
 class Brick(mySprite):
     def __init__(self, width=70, height=30, color=(255, 255, 255)):
@@ -273,6 +280,7 @@ def main():
     create_bricks(bricks)
     
     power_ups = 1
+    paddle_extend = False
     power_up_text = Text(f"Power ups: {power_ups}", "Arial", 20)
     power_up_text.setPOS(0, 30)
 
@@ -304,6 +312,17 @@ def main():
                     for ball in ball_list:
                         ball.set_speed(2)
                     power_ups -= 1
+                elif pressed_keys[pygame.K_s] == 1:
+                    paddle_extend = True
+                    start_time = time.time()
+                    power_ups -= 1
+                
+            if paddle_extend is True:
+                paddle.change_width(150)
+                if time.time() - start_time > 8:
+                    paddle.change_width(100)
+                    paddle_extend = False
+
 
             for ball in ball_list:
                 if ball.checkBoundaries(window.get_width(), window.get_height(), 0, black_heading.get_height()):
@@ -369,7 +388,6 @@ def main():
         if len(bricks) == 0:
             level += 1
             level_text.update_text(f"Level: {level}")
-            #started = False
             pos_x = 1
             for ball in ball_list:
                 ball.setPOS((window.get_width() - 20)/2 +30*pos_x, (window.get_height() - 20)/2 + 70)
