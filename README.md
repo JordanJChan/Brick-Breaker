@@ -33,6 +33,14 @@ Some other features include:
 * Only one power up can be used each level but you can use power ups again if you lose a life.
 * Destroying brick will increase the score by one.
 
+## Planning Components
+Flowchart:
+
+![Brick Breaker Flowchart](Images/Brick%20Breaker%20flowchart.drawio.png)
+
+UML Tables:
+
+![Brick Breaker UML Tables](Images/Brick%20Breaker%20UML.drawio.png)
 
 ## Reflection
 When I started programming the game, I knew that two classes are most essential for the game to work: the mySprite class and the Window class. The Window class is needed to display the game window and ensure that the game is running slowly. Meanwhile, the mySprite class is used as the parent class for other subclasses to inherit from. It contains all the important attributes as well as methods that are needed for a sprite to function. After I finished creating the mySprite class, I was able to easily set up the subclasses for all the other specific sprites like the ball, paddle, etc. by having them inherit the methods and attributes then adding some additional ones. Overall, creating the classes for my game was the most successful part of this project.
@@ -43,5 +51,3 @@ However, I was still facing issues with the ball and brick collision. I tried to
 
 Looking back after finishing the project, there are some parts of the game I would like to modify. For instance, I would like to make it so that instead of the player pressing the “w” or “s” key to use a power up, the power up spawns from a special brick when destroyed by a ball. It makes the game harder for the player as they cannot use a power up whenever they please; they have to destroy some specific bricks to get the power ups. Another aspect of the game I would like to change is the location where the ball spawns. Currently, the ball spawns close to the center of the screen not far away from the bricks. It only goes towards the bottom right corner. I would change this so that either the player has the option to shoot the ball or it could randomly choose to go towards the left or right bottom corner to make it less predictable. 
 
-
-## Planning
